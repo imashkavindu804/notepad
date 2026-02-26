@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Amarasri Herath Notepad</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 30px;
+    background: #0f172a;
+    overflow-x: hidden;
+    color: white;
+}
+
+/* Aurora Background */
+body::before {
+    content: "";
+    position: fixed;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: radial-gradient(circle at 30% 30%, #667eea55, transparent 40%),
+                radial-gradient(circle at 70% 60%, #764ba255, transparent 40%),
+                radial-gradient(circle at 50% 80%, #6a11cb55, transparent 40%);
+    animation: auroraMove 20s linear infinite;
+    z-index: -1;
+}
+
+@keyframes auroraMove {
+    0%   { transform: rotate(0deg) scale(1); }
+    50%  { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.container {
+    max-width: 650px;
+    margin: auto;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: 0.3s ease;
+}
+
+.card:hover {
+    border-color: #667eea;
+    box-shadow: 0 0 25px rgba(102,126,234,0.4);
+    transform: translateY(-4px);
+}
+
+.title-input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #d0d5dd;
+    background: #ffffff;
+    color: #111827;
+    margin-bottom: 8px;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+textarea {
+    width: 100%;
+    height: 50px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #d0d5dd;
+    background: #ffffff;
+    color: #111827;
+    resize: vertical;
+}
+
+/* Button Row */
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+/* Generate Button */
+.generate-btn {
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.generate-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(118,75,162,0.6);
+}
+
+/* Counter Section */
+.counter-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.counter-box {
+    background: rgba(255,255,255,0.15);
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Reset Button */
+.reset-btn {
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: none;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.reset-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <small>© Imash Kavindu Dissanayake</small>
+    <h1>Amarasri Herath Notepad 📝</h1>
+</div>
+
+<div class="container" id="notesContainer"></div>
+
+<script>
+
+function saveData(id, value) {
+    localStorage.setItem(id, value);
+}
+
+function loadData(id) {
+    return localStorage.getItem(id) || "";
+}
+
+function loadCount(id) {
+    return parseInt(localStorage.getItem(id)) || 0;
+}
+
+function saveCount(id, value) {
+    localStorage.setItem(id, value);
+}
+
+function generateAndCopy(textId, countId) {
+
+    let textArea = document.getElementById(textId);
+    let originalText = textArea.value;
+
+    if(originalText.trim() === "") {
+        alert("Please enter text!");
+        return;
+    }
+
+    let registerCode = Math.floor(10000 + Math.random() * 90000);
+    let finalText = originalText + registerCode;
+
+    navigator.clipboard.writeText(finalText);
+
+    // Increase counter
+    let count = loadCount(countId);
+    count++;
+    saveCount(countId, count);
+    document.getElementById(countId).innerText = count;
+}
+
+function resetCount(countId) {
+    saveCount(countId, 0);
+    document.getElementById(countId).innerText = 0;
+}
+
+let container = document.getElementById("notesContainer");
+
+for(let i=1; i<=10; i++) {
+
+    let card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+        <input type="text" 
+               class="title-input" 
+               id="title${i}" 
+               placeholder="Text Name / Identifier">
+
+        <textarea id="text${i}" 
+                  placeholder="Write something..."></textarea>
+
+        <div class="button-row">
+            <button class="generate-btn"
+                onclick="generateAndCopy('text${i}','count${i}')">
+                Generate & Copy Code
+            </button>
+
+            <div class="counter-section">
+                <div class="counter-box">
+                    Count: <span id="count${i}">0</span>
+                </div>
+                <button class="reset-btn"
+                    onclick="resetCount('count${i}')">
+                    Reset
+                </button>
+            </div>
+        </div>
+    `;
+
+    container.appendChild(card);
+
+    // Load saved data
+    document.getElementById(`title${i}`).value = loadData(`title${i}`);
+    document.getElementById(`text${i}`).value = loadData(`text${i}`);
+    document.getElementById(`count${i}`).innerText = loadCount(`count${i}`);
+
+    // Auto save
+    document.getElementById(`title${i}`).addEventListener("input", function() {
+        saveData(`title${i}`, this.value);
+    });
+
+    document.getElementById(`text${i}`).addEventListener("input", function() {
+        saveData(`text${i}`, this.value);
+    });
+}
+
+</script>
+
+</body>
+</html>
